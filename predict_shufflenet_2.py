@@ -71,7 +71,7 @@ def predict(img):
         out, score = decode_ctc.decode_chn_eng(y_pred[0], lan, char_set)
         out_ori, score_ori = decode_ctc.decode_ori(y_pred1[0], char_set, lan)
         if out_ori != out:
-            np.save('npy/'+str(time.time()) + '.jpg')
+            np.save('npy/'+str(time.time()) + '.jpg',y_pred_2)
     else:
         #out,score = decode_ctc.decode_chn_eng(y_pred[0],lan,char_set)
         # b= time.time()
