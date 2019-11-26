@@ -20,8 +20,8 @@ decode_ctc = decode_ctc(eng_dict_path_file='./char_rec/corpus/eng_dict.pkl',
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "7,6"
-Check_label =True
-Decode_debug = False
+Check_label =False
+Decode_debug = True
 GPU_NUM = 2
 encode_dct = {}
 char_set_txt = 'chn.txt'
