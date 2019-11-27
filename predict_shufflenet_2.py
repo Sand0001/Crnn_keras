@@ -149,10 +149,10 @@ if __name__ == '__main__':
                             del_rec_text = del_blank_text.replace('–', '-')
                             del_blank_label_text, score = decode_ctc.strQ2B(del_blank_label_text,[1]*len(del_blank_label_text))
                             
-                            # if '^' in del_blank_label_text or '~' in del_blank_label_text:
-                                #    script_label.writelines(i + '  ' + label_text + '\n')
-                                #    shutil.copy(os.path.join(input_image_path, i),'../eng_test_subscript/test/')
-                                # continue
+                            if '▿' in del_blank_label_text or '▵' in del_blank_label_text:
+                                   # script_label.writelines(i + '  ' + label_text + '\n')
+                                   # shutil.copy(os.path.join(input_image_path, i),'../eng_test_subscript/test/')
+                                continue
                             num += 1
                             if is_upper(label_text):
                                 upper_num += 1
