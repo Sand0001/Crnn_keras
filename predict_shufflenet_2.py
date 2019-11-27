@@ -22,6 +22,7 @@ decode_ctc = decode_ctc(eng_dict_path_file='./char_rec/corpus/eng_dict.pkl',
 os.environ["CUDA_VISIBLE_DEVICES"] = "7,6"
 Check_label =True
 Decode_debug = False
+Add_post_process = True
 GPU_NUM = 2
 encode_dct = {}
 char_set_txt = 'chn.txt'
@@ -73,9 +74,10 @@ def predict(img):
         if out_ori != out:
             np.save('npy/'+str(time.time()) + '.jpg',y_pred_2)
     else:
-        out,score = decode_ctc.decode_chn_eng(y_pred[0],lan,char_set)
-        # b= time.time()
-        #out,score = decode_ctc.decode_ori(y_pred1[0],char_set,lan)
+        if Add_post_process:
+            out,score = decode_ctc.decode_chn_eng(y_pred[0],lan,char_set)
+        else:
+            out,score = decode_ctc.decode_ori(y_pred1[0],char_set,lan)
     out = out.replace(' ','▿')
     out = out.replace('　','▵')
     return out, score, b
