@@ -135,6 +135,7 @@ if __name__ == '__main__':
             for line in test_label_lines:
                 picName = line.split(' ')[0].strip()
                 test_img_list.append(picName)
+        print('加载{}张图片 picname格式{}'.format(len(test_img_list),picName))
         pre_time_all = 0
         for jj in range(1):
             for i in os.listdir(input_image_path):
