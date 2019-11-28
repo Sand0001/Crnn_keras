@@ -20,9 +20,10 @@ decode_ctc = decode_ctc(eng_dict_path_file='./char_rec/corpus/eng_dict.pkl',
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "7,6"
-Check_label = False
-Decode_debug = True
-Add_post_process = True
+Check_label = True
+Decode_debug = False
+Add_post_process = False
+Add_scripts = True
 GPU_NUM = 2
 encode_dct = {}
 char_set_txt = 'chn.txt'
@@ -150,8 +151,8 @@ if __name__ == '__main__':
                             del_blank_label_text = del_blank_label_text.replace('–', '-')
                             del_rec_text = del_blank_text.replace('–', '-')
                             del_blank_label_text, score = decode_ctc.strQ2B(del_blank_label_text,[1]*len(del_blank_label_text))
-                            
-                            if '▿' in del_blank_label_text or '▵' in del_blank_label_text:
+
+                            if '▿' in del_blank_label_text or '▵' in del_blank_label_text and not Add_scripts:
                                    # script_label.writelines(i + '  ' + label_text + '\n')
                                    # shutil.copy(os.path.join(input_image_path, i),'../eng_test_subscript/test/')
                                 continue
