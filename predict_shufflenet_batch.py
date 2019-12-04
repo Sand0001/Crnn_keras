@@ -383,14 +383,18 @@ if __name__ == '__main__':
                     img = np.array(img, 'f') / 255.0 - 0.5
 
                     img = np.expand_dims(img, axis=2).swapaxes(0, 1)
-                    batch_img.append(img)
-                    label_list.append(test_label_lines[test_img_list.index(i)])
+                    try:
+                        label_list.append(test_label_lines[test_img_list.index(i)])
+                        batch_img.append(img)
+                    except:
+                        continue
+
                     if len(batch_img) == 112*2:
                         y_pred = basemodel.predict_on_batch(np.array(batch_img))[:,2:,:]
                         for j in range(len(y_pred)):
                             label_text = ' '.join(label_list[j].split(' ')[1:]).strip()
                             text = decode_ori(y_pred[j])
-                            print(text)
+                            #print(text)
                             if len(test_label_lines) != 0:
                                 del_blank_label_text = del_blank(label_text)
                                 del_blank_text = del_blank(text)
