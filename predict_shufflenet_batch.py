@@ -30,7 +30,7 @@ for i in range (0, len(char_set)):
 #这里有bug，因为' '空格会被忽略，导致类别数不对
 char_set = ''.join([ch.strip('\n') for ch in char_set] + ['卍'])
 '''
-char_set = open('chn.txt', 'r', encoding='utf-8').readlines()
+char_set = open('eng.txt', 'r', encoding='utf-8').readlines()
 for i in range (0, len(char_set)):
 	c = char_set[i].strip('\n')
 	encode_dct[c] = i
