@@ -20,13 +20,13 @@ decode_ctc = decode_ctc(eng_dict_path_file='./char_rec/corpus/eng_dict.pkl',
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "7,6"
-Check_label = True
+Check_label = False
 Decode_debug = False
-Add_post_process = False
-Add_scripts = True
+Add_post_process = False 
+Add_scripts = True 
 GPU_NUM = 2
 encode_dct = {}
-char_set_txt = 'chn.txt'
+char_set_txt = 'eng.txt'
 if char_set_txt == 'chn.txt':
     lan = 'chn'
 elif char_set_txt == 'eng.txt':
@@ -125,6 +125,7 @@ if __name__ == '__main__':
         upper_correct = 0
         predict_time = 0
         upper_num = 0
+        not_in_pic_list = 0
         test_label_lines = []
         if Check_label:
             check_label_json = open('check_label.json','w')
@@ -182,8 +183,16 @@ if __name__ == '__main__':
                                 print(i)
                                 print(del_blank_label_text)
                                 print(del_blank_text)
+                    else:
+                        print('not in pic_list',i)
+                        not_in_pic_list +=1
+
             if num != 0:
-                print('acc:', correct * 1.0 / num, num, upper_num, upper_correct, upper_correct * 1.0 / upper_num)
+                print('acc:', correct * 1.0 / num, num,correct,'noy in list',not_in_pic_list )
+                if upper_num!= 0:
+                    print('upper acc ',upper_correct, upper_correct * 1.0 / upper_num)
+                else:
+                    print('upper num is 0')
                 print('model 加载时间', model_time)
                 print('predict time', predict_time)
                 pre_time_all += predict_time
