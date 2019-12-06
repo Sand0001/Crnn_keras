@@ -384,7 +384,8 @@ if __name__ == '__main__':
                     #label_text = ''.join(test_label_lines[test_img_list.index(i)].split('.jpg ')[1:]).strip()
                     # img = Image.open(os.path.join(input_image_path, i)).convert('L')
                     img = cv2.imread(os.path.join(input_image_path, i))
-                    img = img / 255.0 - 0.5
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    img = np.array(img, 'f') / 255.0 - 0.5
 
                     img = np.expand_dims(img, axis=2).swapaxes(0, 1)
 
