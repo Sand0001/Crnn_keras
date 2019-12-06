@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+import cv2
 import json
 import time
 import numpy as np
@@ -335,6 +336,15 @@ def is_upper(word):
                 if w >= 'A' and w <= 'Z':
                         return True
         return False
+
+def img_resize(partImg):
+    image = cv2.cvtColor(partImg, cv2.COLOR_BGR2GRAY)
+    width, height = image.shape[1], image.shape[0]
+    scale = height * 1.0 / 32
+    width = int(width / scale)
+    image = cv2.resize(image, (width, 32))
+    return image
+
 if __name__ == '__main__':
         import sys
         #label_txt = open('','w')
@@ -365,16 +375,18 @@ if __name__ == '__main__':
             #label_txt = open('label_tmp.txt','w')
             batch_img = []
             label_list = []
+            aa = time.time()
             for i in os.listdir(input_image_path):
             #for i in range(20):
                 #img = Image.open(os.path.join(input_image_path,i).convert('L'))
                 if "jpg" in i or 'png' in i:
                     #print(i)
                     #label_text = ''.join(test_label_lines[test_img_list.index(i)].split('.jpg ')[1:]).strip()
-                    img = Image.open(os.path.join(input_image_path, i)).convert('L')
-                    img = np.array(img, 'f') / 255.0 - 0.5
-
-                    img = np.expand_dims(img, axis=2).swapaxes(0, 1)
+                    # img = Image.open(os.path.join(input_image_path, i)).convert('L')
+                    # img = np.array(img, 'f') / 255.0 - 0.5
+                    #
+                    # img = np.expand_dims(img, axis=2).swapaxes(0, 1)
+                    img = cv2.imread(os.path.join(input_image_path, i))
                     try:
                         label_list.append(test_label_lines[test_img_list.index(i)])
                         batch_img.append(img)
