@@ -19,7 +19,7 @@ import shutil
 import shufflenet_res_crnn as densenet
 #net_4_crnn_cudnnlstmeload(densenet)
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "7,6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6,7"
 GPU_NUM = 2
 encode_dct =  {}
 '''
@@ -89,10 +89,6 @@ def decode_ori(pred):
 	#print (u''.join([str(c) for c in prob_list]))
 	#print (u' '.join([str(c) for c in debug_list]))
 	text = u''.join(char_list)
-	text = text.replace('▵S','▵s')
-	text = text.replace('▿','~')
-	text = text.replace('▵','^')
-	text = text.replace('–','-')
 	return text
 k = 0.00000001
 def get_bigram_score(s):
@@ -233,10 +229,6 @@ def decode_Viterbi(pred):
     text_final += text_tmp_final
     score_list += score_list_tmp
     text = text_final
-    text = text.replace('▵S','▵s')
-    text = text.replace('▿','~')
-    text = text.replace('▵','^')
-    text = text.replace('–','-')
     return text
 
 def predict(img):
@@ -361,7 +353,7 @@ if __name__ == '__main__':
             test_label_lines = []
             if sys.argv[3] == 'acc':
                 test_label_lines = open(sys.argv[4],'r').readlines()
-                #upper_test = open('upper.json','w')
+                upper_test = open('upper.json','w')
                 script_label = open('../eng_test_subscript/label_pred.txt','a')
                 #test_img_list = []
                 for line in test_label_lines:
@@ -388,12 +380,16 @@ if __name__ == '__main__':
                         batch_img.append(img)
                     except:
                         continue
-
+                    bb = time.time()
                     if len(batch_img) == 112*2:
+                        a = time.time()
                         y_pred = basemodel.predict_on_batch(np.array(batch_img))[:,2:,:]
+                        print('batch time',time.time()-a)
                         for j in range(len(y_pred)):
+                            a = time.time()
                             label_text = ' '.join(label_list[j].split(' ')[1:]).strip()
                             text = decode_ori(y_pred[j])
+                            #print('decode time',time.time()-a)
                             #print(text)
                             if len(test_label_lines) != 0:
                                 del_blank_label_text = del_blank(label_text)
@@ -414,10 +410,11 @@ if __name__ == '__main__':
                                         upper_num +=1
                                     correct += 1
                                 else:
-					
+				#	
                                     if is_upper(del_blank_label_text):
                                         upper_num +=1
-                                    print('label_text',label_text)
+                                    #print('text',text)
+                                    #print('label_text',label_text)
                                     imagename = {}
                                     imagename['img_name'] = label_list[j].split(' ')[0] + '.jpg'
                                     #imagename['text'] =
@@ -426,7 +423,8 @@ if __name__ == '__main__':
                                     label_and_rec_text['rec_text'] = text
                                     imagename['text'] = label_and_rec_text
                                     imagename['rec_img']= ''
-                                    #upper_test.write(json.dumps(imagename) + '\n')
+                                    upper_test.write(json.dumps(imagename) + '\n')
+                        print('一个batch 需要时间',time.time()-bb)
                         print('已完成{}个'.format(num))
                         label_list = []
                         batch_img = []
