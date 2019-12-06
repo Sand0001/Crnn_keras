@@ -383,10 +383,11 @@ if __name__ == '__main__':
                     #print(i)
                     #label_text = ''.join(test_label_lines[test_img_list.index(i)].split('.jpg ')[1:]).strip()
                     # img = Image.open(os.path.join(input_image_path, i)).convert('L')
-                    # img = np.array(img, 'f') / 255.0 - 0.5
-                    #
-                    # img = np.expand_dims(img, axis=2).swapaxes(0, 1)
                     img = cv2.imread(os.path.join(input_image_path, i))
+                    img = img / 255.0 - 0.5
+
+                    img = np.expand_dims(img, axis=2).swapaxes(0, 1)
+
                     try:
                         label_list.append(test_label_lines[test_img_list.index(i)])
                         batch_img.append(img)
@@ -395,6 +396,7 @@ if __name__ == '__main__':
                     bb = time.time()
                     if len(batch_img) == 112*2:
                         a = time.time()
+                        print('预处理时间',a -aa)
                         y_pred = basemodel.predict_on_batch(np.array(batch_img))[:,2:,:]
                         print('batch time',time.time()-a)
                         for j in range(len(y_pred)):
@@ -422,7 +424,7 @@ if __name__ == '__main__':
                                         upper_num +=1
                                     correct += 1
                                 else:
-				#	
+
                                     if is_upper(del_blank_label_text):
                                         upper_num +=1
                                     #print('text',text)
@@ -437,6 +439,7 @@ if __name__ == '__main__':
                                     imagename['rec_img']= ''
                                     upper_test.write(json.dumps(imagename) + '\n')
                         print('一个batch 需要时间',time.time()-bb)
+                        aa = time.time()
                         print('已完成{}个'.format(num))
                         label_list = []
                         batch_img = []
