@@ -124,6 +124,8 @@ if __name__ == '__main__':
         num = 0
         upper_correct = 0
         predict_time = 0
+        script_correct = 0
+        script_num = 0
         upper_num = 0
         not_in_pic_list = 0
         test_label_lines = []
@@ -155,19 +157,17 @@ if __name__ == '__main__':
                             del_rec_text = del_blank_text.replace('–', '-')
                             del_blank_label_text, score = decode_ctc.strQ2B(del_blank_label_text,[1]*len(del_blank_label_text))
 
-                            #if '▿' in del_blank_label_text or '▵' in del_blank_label_text and not Add_scripts:
-                                   # script_label.writelines(i + '  ' + label_text + '\n')
-                                   # shutil.copy(os.path.join(input_image_path, i),'../eng_test_subscript/test/')
-                            #    continue
+                            if '▿' in del_blank_label_text or '▵' in del_blank_label_text :
+                                script_num+=1
+                                if Add_scripts == False:
+                                    continue
+                                else:
+                                    if del_blank_label_text == del_rec_text:
+                                        script_correct += 1
                             if is_upper(label_text):
                                 upper_num += 1
-                                # print(i)
                                 if del_blank_label_text == del_rec_text:
                                     upper_correct += 1
-                                else:
-                                    print('wrong')
-                                    print(del_blank_label_text)
-                                    print(del_blank_text)
                             if del_blank_label_text == del_rec_text:
                                 correct += 1
                             else:
@@ -183,18 +183,17 @@ if __name__ == '__main__':
                                 print(i)
                                 print(del_blank_label_text)
                                 print(del_blank_text)
-                        else:
-                            print('wrong test_label_lines',test_label_lines)
-                    else:
-                        print('not in pic_list',i)
-                        not_in_pic_list +=1
 
             if num != 0:
-                print('acc:', correct * 1.0 / num, num,correct,'noy in list',not_in_pic_list )
+                print('acc:', correct * 1.0 / num, num,correct,'not in list',not_in_pic_list )
                 if upper_num!= 0:
                     print('upper acc ',upper_correct, upper_correct * 1.0 / upper_num)
                 else:
                     print('upper num is 0')
+                if script_num != 0:
+                    print('script acc ',script_correct*1.0/script_num,script_num,script_correct)
+                else:
+                    print('script num is 0')
                 print('model 加载时间', model_time)
                 print('predict time', predict_time)
                 pre_time_all += predict_time
