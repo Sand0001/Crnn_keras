@@ -19,10 +19,10 @@ decode_ctc = decode_ctc(eng_dict_path_file='./char_rec/corpus/eng_dict.pkl',
                       lfreq_jap_word_path='./char_rec/corpus/count_word_chn0.json')
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "7,6"
-Check_label = False
+os.environ["CUDA_VISIBLE_DEVICES"] = "6,0"
+Check_label = True
 Decode_debug = False
-Add_post_process = False 
+Add_post_process = True 
 Add_scripts = True 
 GPU_NUM = 2
 encode_dct = {}
@@ -148,17 +148,17 @@ if __name__ == '__main__':
                         label_text = ''.join(test_label_lines[test_img_list.index(i)].split('.jpg ')[1:]).strip()
 
                         if len(test_label_lines) != 0:
+                            num+=1
                             del_blank_label_text = del_blank(label_text)
                             del_blank_text = del_blank(text)
                             del_blank_label_text = del_blank_label_text.replace('–', '-')
                             del_rec_text = del_blank_text.replace('–', '-')
                             del_blank_label_text, score = decode_ctc.strQ2B(del_blank_label_text,[1]*len(del_blank_label_text))
 
-                            if '▿' in del_blank_label_text or '▵' in del_blank_label_text and not Add_scripts:
+                            #if '▿' in del_blank_label_text or '▵' in del_blank_label_text and not Add_scripts:
                                    # script_label.writelines(i + '  ' + label_text + '\n')
                                    # shutil.copy(os.path.join(input_image_path, i),'../eng_test_subscript/test/')
-                                continue
-                            num += 1
+                            #    continue
                             if is_upper(label_text):
                                 upper_num += 1
                                 # print(i)
@@ -183,6 +183,8 @@ if __name__ == '__main__':
                                 print(i)
                                 print(del_blank_label_text)
                                 print(del_blank_text)
+                        else:
+                            print('wrong test_label_lines',test_label_lines)
                     else:
                         print('not in pic_list',i)
                         not_in_pic_list +=1
