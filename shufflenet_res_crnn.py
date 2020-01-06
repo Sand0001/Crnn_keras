@@ -20,6 +20,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateSchedule
 from keras.layers.wrappers import TimeDistributed
 import resnet
 import shufflenet_res as shufflenet 
+#import shufflenet_res50 as shufflenet
 import sys
 #from parameter import *
 GPU_ID_LIST = '0,1,2'
@@ -37,14 +38,14 @@ batch_size = 112 * GPU_NUM
 #test_size = 40000
 #tag = 'multilan_test_v11'
 #train_size = 6300000
-train_size = 6000000
-test_size = 20000
+train_size = 7000000
+test_size = 25000
 tag = sys.argv[1]
 
 encode_dct =  {}
 
 
-def get_session(gpu_fraction=0.95):
+def get_session(gpu_fraction=0.1):
 
     num_threads = os.environ.get('OMP_NUM_THREADS')
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
@@ -283,7 +284,7 @@ def get_model(training, img_h, nclass):
     model.summary()
     multi_model = multi_gpu_model(model, gpus=GPU_NUM)
     save_model = model
-    ada = Adadelta()
+    ada = Adadelta(lr = 0.1)
     #multi_model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer='adam', metrics=['accuracy'])
     multi_model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=ada, metrics=['accuracy'])
     return save_model, multi_model

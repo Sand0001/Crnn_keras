@@ -19,14 +19,14 @@ decode_ctc = decode_ctc(eng_dict_path_file='./char_rec/corpus/eng_dict.pkl',
                       lfreq_jap_word_path='./char_rec/corpus/count_word_chn0.json')
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "6,0"
-Check_label = True
+os.environ["CUDA_VISIBLE_DEVICES"] = "7,1"
+Check_label = True 
 Decode_debug = False
 Add_post_process = True 
 Add_scripts = True 
 GPU_NUM = 2
 encode_dct = {}
-char_set_txt = 'eng.txt'
+char_set_txt = 'japeng.txt'
 if char_set_txt == 'chn.txt':
     lan = 'chn'
 elif char_set_txt == 'eng.txt':

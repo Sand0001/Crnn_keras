@@ -397,9 +397,9 @@ if __name__ == '__main__':
                     bb = time.time()
                     if len(batch_img) == 112*2:
                         a = time.time()
-                        print('预处理时间',a -aa)
+                        #print('预处理时间',a -aa)
                         y_pred = basemodel.predict_on_batch(np.array(batch_img))[:,2:,:]
-                        print('batch time',time.time()-a)
+                        #print('batch time',time.time()-a)
                         for j in range(len(y_pred)):
                             a = time.time()
                             label_text = ' '.join(label_list[j].split(' ')[1:]).strip()
@@ -439,24 +439,13 @@ if __name__ == '__main__':
                                     imagename['text'] = label_and_rec_text
                                     imagename['rec_img']= ''
                                     upper_test.write(json.dumps(imagename) + '\n')
-                        print('一个batch 需要时间',time.time()-bb)
+                        #print('一个batch 需要时间',time.time()-bb)
                         aa = time.time()
                         print('已完成{}个'.format(num))
                         label_list = []
                         batch_img = []
                         
-                   # else:
-                    #    print(i)
-                     #   print(text)
-                    if len(sys.argv) > 2 and sys.argv[3]!='acc':
-                        #label_txt.writelines(i+ '  '  +text + '\n')
-                        try:
-                            pic_name = text.replace('/','_') + '.jpg'
-                        except:
-                            pic_name = text + '.jpg'			
-                        #shutil.copy(os.path.join(input_image_path, i),os.path.join(sys.argv[3],pic_name))
-                        #label_txt.writelines(pic_name + '  '  +text + '\n')
-            if num != 0:
-                print('acc:',correct*1.0/num,num, upper_num,upper_correct,'upper acc:',upper_correct *1.0/upper_num)
-            else:
-                print('YOU AREE WRONG!!!')
+                        if num != 0:
+                            print('acc:',correct*1.0/num,num, upper_num,upper_correct,'upper acc:',upper_correct *1.0/upper_num)
+                        else:
+                            print('YOU AREE WRONG!!!')

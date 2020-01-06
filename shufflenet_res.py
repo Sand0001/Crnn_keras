@@ -13,8 +13,8 @@ from keras import layers
 from keras.layers import Input
 from keras.layers import Conv2D
 from keras.layers import Activation
-from keras.layers import Reshape
 from keras.layers import Dense
+from keras.layers import Reshape
 from keras.layers import BatchNormalization
 from keras.layers import Concatenate
 from keras.layers import DepthwiseConv2D
@@ -24,7 +24,6 @@ from keras.layers import MaxPooling2D
 from keras.layers import GlobalAveragePooling2D, GlobalMaxPooling2D
 from keras.models import Model
 from keras import backend as K
-#import char_rec.resnet as resnet
 import numpy as np
 
 
@@ -37,15 +36,6 @@ def channel_split(x, name=''):
     return c_hat, c
 
 
-# def channel_shuffle(x):
-#     height, width, channels = x.shape.as_list()[1:]
-#     channels_per_split = channels // 2
-#
-#     x = K.reshape(x, [-1, height, width, 2, channels_per_split])
-#     x = K.permute_dimensions(x, (0, 1, 2, 4, 3))
-#     x = K.reshape(x, [-1, height, width, channels])
-#
-#     return x
 def channel_shuffle(x):
     height, width, channels = x.shape.as_list()[1:]
     channels_per_split = channels // 2
@@ -56,6 +46,7 @@ def channel_shuffle(x):
     #x = K.reshape(x, [-1, -1, width, channels])
     x = Reshape( [ -1, width, channels])(x)
     return x
+
 
 def _shuffle_unit(inputs, out_channels, strides=2, stage=1, block=1):
     bn_axis = -1
@@ -131,7 +122,7 @@ def v2_block(x, channel_map, repeat=1, stage=1):
 
 def res_block(x):
     x = res18_conv_block(x, 3, [256, 256, 1024], stage=4, block='a', strides=(1, 2))  # height // 2
-    #x = res18_identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
+    x = res18_identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
     #x = resnet.identity_block(x, 3, [256, 256, 1024], stage=4, block='c')
     # x = resnet.identity_block(x, 3, [256, 256, 1024], stage=4, block='d')
     # x = resnet.identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
@@ -159,7 +150,7 @@ def res18_identity_block(input_tensor, kernel_size, filters, stage, block):
 
     # x = Conv2D(filters1, (1, 1), name=conv_name_base + '2a')(input_tensor)
     # x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
-    # x = Activation('relu')(x)
+    # x = Activation('Mish')(x)
 
     x = Conv2D(filters2, kernel_size,
                padding='same', name=conv_name_base + '2b')(input_tensor)
@@ -174,7 +165,6 @@ def res18_identity_block(input_tensor, kernel_size, filters, stage, block):
     x = layers.add([x, input_tensor])
     x = Activation('relu')(x)
     return x
-
 
 def res18_conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2)):
     """conv_block is the block that has a conv layer at shortcut
@@ -197,65 +187,22 @@ def res18_conv_block(input_tensor, kernel_size, filters, stage, block, strides=(
     conv_name_base = 'res' + str(stage) + block + '_branch'
     bn_name_base = 'bn' + str(stage) + block + '_branch'
     #size // 2 减少步长
-    x = Conv2D(filters1, (1,1), strides=(1,1),
-               name=conv_name_base + '2a')(input_tensor)
-    x = Activation('relu')(x)
-    x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
+    # x = Conv2D(filters1, (1, 1), strides=strides,
+    #            name=conv_name_base + '2a')(input_tensor)
+    # x = Activation('Mish')(x)
+    # x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
 
 
     x = Conv2D(filters2, kernel_size,strides=strides, padding='same',
-               name=conv_name_base + '2b')(x)
+               name=conv_name_base + '2b')(input_tensor)
     x = Activation('relu')(x)
     x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
 
 
-    x = Conv2D(filters3, (1, 1), name=conv_name_base + '2c')(x)
-    x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
+    # x = Conv2D(filters3, (1, 1), name=conv_name_base + '2c')(x)
+    # x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
 
-    shortcut = Conv2D(filters3, (1,1), strides=strides,
-                      name=conv_name_base + '1')(input_tensor)
-    shortcut = BatchNormalization(axis=bn_axis, name=bn_name_base + '1')(shortcut)
-
-    x = layers.add([x, shortcut])
-    x = Activation('relu')(x)
-    return x
-def res50_conv_block(input_tensor, kernel_size, filters, stage, block, strides=(2, 2)):
-    """conv_block is the block that has a conv layer at shortcut
-    # Arguments
-        input_tensor: input tensor
-        kernel_size: defualt 3, the kernel size of middle conv layer at main path
-        filters: list of integers, the filterss of 3 conv layer at main path
-        stage: integer, current stage label, used for generating layer names
-        block: 'a','b'..., current block label, used for generating layer names
-    # Returns
-        Output tensor for the block.
-    Note that from stage 3, the first conv layer at main path is with strides=(2,2)
-    And the shortcut should have strides=(2,2) as well
-    """
-    filters1, filters2, filters3 = filters
-    if K.image_data_format() == 'channels_last':
-        bn_axis = 3
-    else:
-        bn_axis = 1
-    conv_name_base = 'res' + str(stage) + block + '_branch'
-    bn_name_base = 'bn' + str(stage) + block + '_branch'
-    #size // 2 减少步长
-    x = Conv2D(filters1, (1, 1), strides=strides,
-               name=conv_name_base + '2a')(input_tensor)
-    x = Activation('relu')(x)
-    x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')(x)
-
-
-    x = Conv2D(filters2, kernel_size,strides=strides, padding='same',
-               name=conv_name_base + '2b')(x)
-    x = Activation('relu')(x)
-    x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')(x)
-
-
-    x = Conv2D(filters3, (1, 1), name=conv_name_base + '2c')(x)
-    x = BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')(x)
-
-    shortcut = Conv2D(filters3, (1, 1), strides=strides,
+    shortcut = Conv2D(filters2, (1, 1), strides=strides,
                       name=conv_name_base + '1')(input_tensor)
     shortcut = BatchNormalization(axis=bn_axis, name=bn_name_base + '1')(shortcut)
 
@@ -275,7 +222,7 @@ def ShuffleNet_V2(include_top=True, input_tensor=None, scale_factor=1.0, pooling
     #                                   data_format = K.image_data_format(),
     #                                   require_flatten = include_top,
     #                                   weights = weights)
-    input_shape = (None, 32, 1)
+    input_shape = (280, 32, 1)
 
     out_dim_stage_two = {0.5: 48, 1: 116, 1.5: 176, 2: 244}
 
@@ -335,18 +282,17 @@ def ShuffleNet_V2(include_top=True, input_tensor=None, scale_factor=1.0, pooling
         repeat = num_shuffle_units[stage]
         #print('repeat', repeat, stage)
         x = v2_block(x, channel_map=out_channels_in_stage, repeat=repeat, stage=stage + 2)
-
     #  stage4
 
     x = res_block(x)
 
     # construct final layers
-    # if scale_factor == 2:
-    #     x = Conv2D(filters=2048, kernel_size=1, strides=1, padding='same',
-    #                use_bias=False, activation='relu', name='conv5')(x)
-    # else:
-    #     x = Conv2D(filters=1024, kernel_size=1, strides=1, padding='same',
-    #                use_bias=False, activation='relu', name='conv5')(x)
+    if scale_factor == 2:
+        x = Conv2D(filters=2048, kernel_size=1, strides=1, padding='same',
+                   use_bias=False, activation='relu', name='conv5')(x)
+    else:
+        x = Conv2D(filters=1024, kernel_size=1, strides=1, padding='same',
+                   use_bias=False, activation='relu', name='conv5')(x)
 
     # if pooling == 'avg':
     #     x = GlobalAveragePooling2D(name='global_average_pool')(x)
@@ -357,19 +303,20 @@ def ShuffleNet_V2(include_top=True, input_tensor=None, scale_factor=1.0, pooling
     #     x = Dense(classes, name='fc')(x)
     #     x = Activation('softmax')(x)
     #
-    if input_tensor is not None:
-        inputs = get_source_inputs(input_tensor)
-    else:
-        inputs = img_input
-
-    # construct model function
-    model = Model(inputs=inputs, outputs=x, name='ShuffleNet_V2')
-    model.summary()
+    # if input_tensor is not None:
+    #     inputs = get_source_inputs(input_tensor)
+    # else:
+    #     inputs = img_input
+    # 
+    # # construct model function
+    # model = Model(inputs=inputs, outputs=x, name='ShuffleNet_V2')
+    # model.summary()
     return x
 
 
 if __name__ == '__main__':
     ShuffleNet_V2()
+
 
 
 
