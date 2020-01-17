@@ -18,7 +18,7 @@ GPU_NUM = 2
 
 encode_dct =  {}
 #char_set = open('japchn.txt', 'r', encoding='utf-8').readlines()
-char_set = open('chn.txt', 'r', encoding='utf-8').readlines()
+char_set = open('japeng.txt', 'r', encoding='utf-8').readlines()
 for i in range (0, len(char_set)):
 	c = char_set[i].strip('\n')
 	encode_dct[c] = i
