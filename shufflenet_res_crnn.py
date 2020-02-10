@@ -368,7 +368,7 @@ if __name__ == '__main__':
     #test_loader = gen('../all/test_13_100.txt', '../all/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
     checkpoint = ModelCheckpoint(filepath='./models/'+ tag + '/weights_'+tag+'_shufflenet-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=False, save_weights_only=True)
     checkpoint.set_model(save_model)
-
+    lr_change = Lr_change()
     lr_schedule = lambda epoch: 0.0005 * 1 * 0.55**epoch
     
     learning_rate = np.array([lr_schedule(i) for i in range(30)])
@@ -385,6 +385,6 @@ if __name__ == '__main__':
         #workers = 8,
         #use_multiprocessing = True,
         #callbacks = [checkpoint, earlystop, changelr, tensorboard])
-        callbacks = [checkpoint, Lr_change, tensorboard])
+        callbacks = [checkpoint, lr_change, tensorboard])
         # callbacks = [checkpoint, tensorboard])
 
