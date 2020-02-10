@@ -18,12 +18,12 @@ from keras.models import Model
 from keras.layers.recurrent import LSTM
 from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard
 from keras.layers.wrappers import TimeDistributed
-import resnet
+#import resnet
 import shufflenet_res as shufflenet 
 #import shufflenet_res50 as shufflenet
 import sys
 #from parameter import *
-GPU_ID_LIST = '0,1,2'
+GPU_ID_LIST = '1,2,4'
 os.environ["CUDA_VISIBLE_DEVICES"] = GPU_ID_LIST
 import re
 
@@ -32,29 +32,38 @@ img_w = 280
 batch_size = 128
 maxlabellength = 35
 GPU_NUM = len(GPU_ID_LIST.split(','))
-batch_size = 112 * GPU_NUM
+batch_size = 200 * GPU_NUM
 #batch_size = 2
-#train_size = 500000
+train_size = 2000000
 #test_size = 40000
 #tag = 'multilan_test_v11'
 #train_size = 6300000
-train_size = 7000000
-test_size = 25000
+#train_size = 2000000
+test_size = 10000
 tag = sys.argv[1]
 
 encode_dct =  {}
 
 
-def get_session(gpu_fraction=0.1):
+def get_session(gpu_fraction=0.97):
 
     num_threads = os.environ.get('OMP_NUM_THREADS')
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
-
+   
     if num_threads:
-        return tf.Session(config=tf.ConfigProto(
-            gpu_options=gpu_options, intra_op_parallelism_threads=num_threads))
+        config = tf.ConfigProto(
+            gpu_options=gpu_options, intra_op_parallelism_threads=num_threads)
+        config.gpu_options.allow_growth = True
+        #return tf.Session(config=tf.ConfigProto(
+        #    gpu_options=gpu_options, intra_op_parallelism_threads=num_threads))
+        return tf.Session(config=config)
     else:
-        return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True, log_device_placement=False))
+        config = tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True, log_device_placement=False)
+
+        config.gpu_options.allow_growth = True
+        return tf.Session(config=config)
+        #return tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True, log_device_placement=False))
+illeagal_list = []
 illeagal_list = []
 def is_valid(text):
     #illeagal_list = []
@@ -225,6 +234,10 @@ def ctc_lambda_func(args):
     # tend to be garbage:
     a = 0.25
     r = 0.5
+    #V = y_pred.shape.as_list()[-1]
+    #print('V',V)
+    epsilon = 0.1
+    #labels = ((1 - epsilon) * labels) + (epsilon / 303)
     y_pred = y_pred[:, 2:, :]
     loss =  K.ctc_batch_cost(labels, y_pred, input_length, label_length)
     p = K.exp(-1 * loss)
@@ -284,7 +297,7 @@ def get_model(training, img_h, nclass):
     model.summary()
     multi_model = multi_gpu_model(model, gpus=GPU_NUM)
     save_model = model
-    ada = Adadelta(lr = 0.1)
+    ada = Adadelta()
     #multi_model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer='adam', metrics=['accuracy'])
     multi_model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=ada, metrics=['accuracy'])
     return save_model, multi_model
@@ -311,8 +324,8 @@ if __name__ == '__main__':
             print('done!')
     #train_loader = gen('./output/default/tmp_labels.txt', './output/default/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
     #test_loader = gen('./test/default/tmp_labels.txt', './test/default/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
-    train_loader = gen('../output/' + tag + '/tmp_labels.txt', '../output/' + tag +'/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
-    test_loader = gen('../test/' + tag + '/tmp_labels.txt', '../test/' + tag + '/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
+    train_loader = gen('/data2/fengjing/OCR_textrender/output/' + tag + '/tmp_labels.txt', '/data2/fengjing/OCR_textrender/output/' + tag +'/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
+    test_loader = gen('/data2/fengjing/OCR_textrender/test/' + tag + '/tmp_labels.txt', '/data2/fengjing/OCR_textrender/test/' + tag + '/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
     #train_loader = gen('../all/train.txt', '../all/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
     #test_loader = gen('../all/test.txt', '../all/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
     #train_loader = gen('../all/train_13_100.txt', '../all/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
@@ -335,6 +348,8 @@ if __name__ == '__main__':
         initial_epoch = 0,
         validation_data = test_loader,
         validation_steps = test_size // batch_size,
+        #workers = 8,
+        #use_multiprocessing = True,
         #callbacks = [checkpoint, earlystop, changelr, tensorboard])
         #callbacks = [checkpoint, changelr, tensorboard])
         callbacks = [checkpoint, tensorboard])
