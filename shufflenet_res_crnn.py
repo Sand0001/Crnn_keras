@@ -347,7 +347,6 @@ if __name__ == '__main__':
     lr_schedule = lambda epoch: 0.0005 * 1 * 0.55**epoch
     
     learning_rate = np.array([lr_schedule(i) for i in range(30)])
-    changelr = LearningRateScheduler(schedule)
     earlystop = EarlyStopping(monitor='val_loss', patience=2, verbose=1)
     tensorboard = TensorBoard(log_dir='./models/logs', write_graph=True)
     print('-----------Start training-----------')
