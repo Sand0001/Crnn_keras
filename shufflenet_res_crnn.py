@@ -303,6 +303,13 @@ def get_model(training, img_h, nclass):
     return save_model, multi_model
 
 
+def schedule(epoch):
+    if(epoch < 4):
+        return 1.0
+
+    else:
+        return 0.1
+
 if __name__ == '__main__':
     char_set = open(sys.argv[2], 'r', encoding='utf-8').readlines()
     for i in range (0, len(char_set)):
@@ -332,13 +339,11 @@ if __name__ == '__main__':
     #test_loader = gen('../all/test_13_100.txt', '../all/', batchsize=batch_size, maxlabellength=maxlabellength, imagesize=(img_h, img_w))
     checkpoint = ModelCheckpoint(filepath='./models/'+ tag + '/weights_'+tag+'_shufflenet-{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', save_best_only=False, save_weights_only=True)
     checkpoint.set_model(save_model)
-    #lr_schedule = lambda epoch: 0.0005 * 0.4**epoch
-    #lr_schedule = lambda epoch: 0.005 * 20 * 0.4 / (epoch + 1)
-    #lr_schedule = lambda epoch: 0.00135 * 2 * 0.33**epoch
+
     lr_schedule = lambda epoch: 0.0005 * 1 * 0.55**epoch
     
     learning_rate = np.array([lr_schedule(i) for i in range(30)])
-    changelr = LearningRateScheduler(lambda epoch: float(learning_rate[epoch]))
+    changelr = LearningRateScheduler(schedule)
     earlystop = EarlyStopping(monitor='val_loss', patience=2, verbose=1)
     tensorboard = TensorBoard(log_dir='./models/logs', write_graph=True)
     print('-----------Start training-----------')
@@ -351,6 +356,6 @@ if __name__ == '__main__':
         #workers = 8,
         #use_multiprocessing = True,
         #callbacks = [checkpoint, earlystop, changelr, tensorboard])
-        #callbacks = [checkpoint, changelr, tensorboard])
-        callbacks = [checkpoint, tensorboard])
+        callbacks = [checkpoint, changelr, tensorboard])
+        # callbacks = [checkpoint, tensorboard])
 
