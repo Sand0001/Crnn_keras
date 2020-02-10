@@ -313,10 +313,11 @@ class Lr_change(keras.callbacks.Callback):
     #         return 0.1
 
     def on_epoch_begin(self, epoch, logs=None):
-        if not hasattr(self.model.optimizer, 'lr'):
-            raise ValueError('Optimizer must have a "lr" attribute.')
-        lr = float(K.get_value(self.model.optimizer.lr))
-        print('lr is',lr)
+        pass
+        # if not hasattr(self.model.optimizer, 'lr'):
+        #     raise ValueError('Optimizer must have a "lr" attribute.')
+        # lr = float(K.get_value(self.model.optimizer.lr))
+        # print('lr is',lr)
         # try:  # new API
         #     lr = self.schedule(epoch, lr)
         # except TypeError:  # old API for backward compatibility
