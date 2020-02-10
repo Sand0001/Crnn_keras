@@ -16,7 +16,7 @@ from keras.optimizers import Adadelta
 from keras.utils import multi_gpu_model
 from keras.models import Model
 from keras.layers.recurrent import LSTM
-from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard
+from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard,Callback
 from keras.layers.wrappers import TimeDistributed
 #import resnet
 import shufflenet_res as shufflenet 
@@ -302,6 +302,33 @@ def get_model(training, img_h, nclass):
     multi_model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=ada, metrics=['accuracy'])
     return save_model, multi_model
 
+class Lr_change(Callback):
+    def __init__(self, schedule, verbose=0):
+        super().__init__()
+        self.schedule = schedule
+        self.verbose = verbose
+    # def on_epoch_begin(self, epoch, logs=None):
+    #     if epoch == 4:
+    #         return 0.1
+
+    def on_epoch_begin(self, epoch, logs=None):
+        if not hasattr(self.model.optimizer, 'lr'):
+            raise ValueError('Optimizer must have a "lr" attribute.')
+        lr = float(K.get_value(self.model.optimizer.lr))
+        print('lr is',lr)
+        # try:  # new API
+        #     lr = self.schedule(epoch, lr)
+        # except TypeError:  # old API for backward compatibility
+        #     lr = self.schedule(epoch)
+        # if not isinstance(lr, (float, np.float32, np.float64)):
+        #     raise ValueError('The output of the "schedule" function '
+        #                      'should be float.')
+        # K.set_value(self.model.optimizer.lr, lr)
+        # if self.verbose > 0:
+        #     print('\nEpoch %05d: LearningRateScheduler setting learning '
+        #           'rate to %s.' % (epoch + 1, lr))
+
+
 
 def schedule(epoch):
     if(epoch < 4):
@@ -356,6 +383,6 @@ if __name__ == '__main__':
         #workers = 8,
         #use_multiprocessing = True,
         #callbacks = [checkpoint, earlystop, changelr, tensorboard])
-        callbacks = [checkpoint, changelr, tensorboard])
+        callbacks = [checkpoint, Lr_change, tensorboard])
         # callbacks = [checkpoint, tensorboard])
 
