@@ -303,10 +303,10 @@ def get_model(training, img_h, nclass):
     return save_model, multi_model
 
 class Lr_change(Callback):
-    def __init__(self, schedule, verbose=0):
-        super().__init__()
-        self.schedule = schedule
-        self.verbose = verbose
+    # def __init__(self, schedule, verbose=0):
+    #     super().__init__()
+    #     self.schedule = schedule
+    #     self.verbose = verbose
     # def on_epoch_begin(self, epoch, logs=None):
     #     if epoch == 4:
     #         return 0.1
