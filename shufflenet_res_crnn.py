@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import traceback
 import tensorflow as tf
+import keras
 from keras import backend as K
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Activation, Reshape, Permute
@@ -302,7 +303,7 @@ def get_model(training, img_h, nclass):
     multi_model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=ada, metrics=['accuracy'])
     return save_model, multi_model
 
-class Lr_change(Callback):
+class Lr_change(keras.callbacks.Callback):
     # def __init__(self, schedule, verbose=0):
     #     super().__init__()
     #     self.schedule = schedule
