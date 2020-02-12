@@ -35,12 +35,12 @@ maxlabellength = 35
 GPU_NUM = len(GPU_ID_LIST.split(','))
 batch_size = 200 * GPU_NUM
 #batch_size = 2
-train_size = 2000000
+train_size = 6000000
 #test_size = 40000
 #tag = 'multilan_test_v11'
 #train_size = 6300000
 #train_size = 2000000
-test_size = 10000
+test_size = 25000
 tag = sys.argv[1]
 
 encode_dct =  {}
@@ -91,7 +91,7 @@ def is_valid(text):
                     num+=1
             else:
                 illeagal_list.append(text[index])
-                #print('不合法的？:',text[index])
+                print('不合法的？:',text[index])
                 return False
     #print(num)
     if num <= maxlabellength:
@@ -360,5 +360,5 @@ if __name__ == '__main__':
         #use_multiprocessing = True,
         #callbacks = [checkpoint, earlystop, changelr, tensorboard])
         callbacks = [checkpoint, lr_change, tensorboard])
-        # callbacks = [checkpoint, tensorboard])
+        #callbacks = [checkpoint, tensorboard])
 
