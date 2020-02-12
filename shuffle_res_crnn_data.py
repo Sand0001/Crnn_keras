@@ -46,6 +46,11 @@ tag = sys.argv[1]
 encode_dct = {}
 
 
+train_list = ['/data2/fengjing/OCR_textrender/output/chn_script_0212',
+              '/data2/fengjing/OCR_textrender/output/chn_script_0131']
+test_list = ['/data2/fengjing/OCR_textrender/test/chn_script_0212',
+             '/data2/fengjing/OCR_textrender/test/chn_script_0131']
+
 def get_session(gpu_fraction=0.95):
     num_threads = os.environ.get('OMP_NUM_THREADS')
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_fraction)
@@ -98,11 +103,11 @@ def is_valid(text):
 
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, data_file,image_path, batch_size=batch_size, shuffle=True):
+    def __init__(self, dir_list,image_path, batch_size=batch_size, shuffle=True):
         self.batch_size = batch_size
 
         self.shuffle = shuffle
-        self.image_label = self.readfile(data_file)
+        self.image_label = self.readfile(dir_list)
         self.imagesize = (32, 280)
         self.image_path = image_path
         self._imagefile = [i for i, j in self.image_label.items()]
@@ -120,9 +125,9 @@ class DataGenerator(keras.utils.Sequence):
         for idx, fname in enumerate(_imagefile):
             # for i in range(0, len(r_n.range)):
             # fname = _imagefile[i]
-            img_f = os.path.join(self.image_path, fname).strip(':')
+            # img_f = os.path.join(self.image_path, fname).strip(':')
             # if os.path.exists(img_f):
-            img1 = Image.open(img_f).convert('L')
+            img1 = Image.open(fname).convert('L')
 
             img = np.array(img1, 'f') / 255.0 - 0.5
             # 转成w * h
@@ -155,27 +160,33 @@ class DataGenerator(keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self._imagefile)
 
-    def readfile(seld,filename):
-        res = []
-        with open(filename, 'r') as f:
-            lines = f.readlines()
-            # lines = lines[:len(lines)//2]
-            for i in lines:
-                res.append(i.strip())
+    def readfile(seld,dir_list):
         dic = {}
-        for i in res:
-            try:
-                first_whitespace_idx = i.index(' ')
-            except:
-                continue
-            img_name = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
-            # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
-            if len(i[first_whitespace_idx + 1:]) == 0 or (not is_valid(i[first_whitespace_idx + 1:])) or len(
-                    img_name) == 0:
-                # print('continue 掉的',i[first_whitespace_idx + 1:])
-                continue
-            # p = i.split(' ')
-            dic[img_name] = i[first_whitespace_idx + 1:]
+
+        for dir in dir_list:
+            res = []
+
+            filename = os.path.join(dir,'tmp_labels.txt')
+
+            with open(filename, 'r') as f:
+                lines = f.readlines()
+                # lines = lines[:len(lines)//2]
+                for i in lines:
+                    res.append(i.strip())
+            for i in res:
+                try:
+                    first_whitespace_idx = i.index(' ')
+                except:
+                    continue
+                img_name_1 = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
+                img_name = os.path.join(dir,img_name_1)
+                # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
+                if len(i[first_whitespace_idx + 1:]) == 0 or (not is_valid(i[first_whitespace_idx + 1:])) or len(
+                        img_name) == 0:
+                    # print('continue 掉的',i[first_whitespace_idx + 1:])
+                    continue
+                # p = i.split(' ')
+                dic[img_name] = i[first_whitespace_idx + 1:]
         print(len(illeagal_list))
         return dic
 
@@ -215,7 +226,7 @@ def encode_label(text):
 
 # # Loss and train functions, network architecture
 def ctc_lambda_func(args):
-    y_pred, labels, input_length, label_length, V = args
+    y_pred, labels, input_length, label_length= args
     # the 2 is critical here since the first couple outputs of the RNN
     # tend to be garbage:
     a = 0.25
@@ -272,7 +283,7 @@ def get_model(training, img_h, nclass):
     # Keras doesn't currently support loss funcs with extra parameters
     # so CTC loss is implemented in a lambda layer
     loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')(
-        [y_pred, labels, input_length, label_length, nclass])  # (None, 1)
+        [y_pred, labels, input_length, label_length])  # (None, 1)
     model = None
     if training:
         model = Model(inputs=[inputs, labels, input_length, label_length], outputs=loss_out)
@@ -307,8 +318,8 @@ if __name__ == '__main__':
             print("Loading model weights...")
             model.load_weights(modelPath)
             print('done!')
-    train_loader = DataGenerator('../output/' + tag + '/tmp_labels.txt', '../output/' + tag + '/',batch_size=batch_size)
-    test_loader = DataGenerator('../test/' + tag + '/tmp_labels.txt', '../test/' + tag + '/',batch_size=batch_size)
+    train_loader = DataGenerator(train_list, '../output/' + tag + '/',batch_size=batch_size)
+    test_loader = DataGenerator(test_list, '../test/' + tag + '/',batch_size=batch_size)
 
     checkpoint = ModelCheckpoint(
         filepath='./models/' + tag + '/weights_' + tag + '_shufflenet-{epoch:02d}-{val_loss:.2f}.h5',
