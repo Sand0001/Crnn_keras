@@ -24,7 +24,7 @@ import shufflenet_res as shufflenet
 import sys
 
 # from parameter import *
-GPU_ID_LIST = '0,1,2'
+GPU_ID_LIST = '1,2'
 os.environ["CUDA_VISIBLE_DEVICES"] = GPU_ID_LIST
 import re
 
@@ -33,14 +33,14 @@ img_w = 280
 batch_size = 128
 maxlabellength = 35
 GPU_NUM = len(GPU_ID_LIST.split(','))
-batch_size = 112 * GPU_NUM
+batch_size = 200 * GPU_NUM
 # batch_size = 2
 # train_size = 500000
 # test_size = 40000
 # tag = 'multilan_test_v11'
 # train_size = 6300000
-train_size = 6000000
-test_size = 20000
+train_size = 6500000
+test_size = 25000
 tag = sys.argv[1]
 
 encode_dct = {}
@@ -189,8 +189,8 @@ class DataGenerator(keras.utils.Sequence):
                 dic[img_name] = i[first_whitespace_idx + 1:]
         print(len(illeagal_list))
         return dic
-    
-    def is_valid(self,text):
+    @staticmethod
+    def is_valid(text):
         # illeagal_list = []
         num = 0
         for index, t in enumerate(text):
