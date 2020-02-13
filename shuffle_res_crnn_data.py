@@ -181,14 +181,49 @@ class DataGenerator(keras.utils.Sequence):
                 img_name_1 = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
                 img_name = os.path.join(dir,img_name_1)
                 # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
-                if len(i[first_whitespace_idx + 1:]) == 0 or (not is_valid(i[first_whitespace_idx + 1:])) or len(
-                        img_name) == 0:
+                if len(i[first_whitespace_idx + 1:]) == 0 or (not DataGenerator.is_valid(i[first_whitespace_idx + 1:])) or len(
+                        img_name_1) == 0:
                     # print('continue 掉的',i[first_whitespace_idx + 1:])
                     continue
                 # p = i.split(' ')
                 dic[img_name] = i[first_whitespace_idx + 1:]
         print(len(illeagal_list))
         return dic
+    
+    def is_valid(self,text):
+        # illeagal_list = []
+        num = 0
+        for index, t in enumerate(text):
+
+            if (t == '▵' or t == '▿') and len(re.compile(r'([a-zA-Z0-9]+|[\(\)\-\=\+]+)').findall(text[index + 1])) != 0:
+                label = t + text[index + 1]
+                if label in encode_dct:
+                    num += 1
+                else:
+                    return False
+
+            else:
+                if (text[index - 1] == '▵' or text[index - 1] == '▿') and len(
+                        re.compile(r'([a-zA-Z0-9]+|[\(\)\-\=\+]+)').findall(t)) != 0:
+                    continue
+                # num+=1
+                if text[index] in encode_dct:
+                    if index > 0 and text[index - 1] == t:
+                        num = num + 2
+                    else:
+                        num += 1
+                else:
+                    illeagal_list.append(text[index])
+                    # print('不合法的？:',text[index])
+                    return False
+        # print(num)
+        if num <= maxlabellength:
+            return True
+        else:
+            # print(text,num)
+            return False
+
+
 
 
 
