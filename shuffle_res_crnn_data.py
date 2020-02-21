@@ -150,7 +150,11 @@ class DataGenerator(keras.utils.Sequence):
     def __getitem__(self, index):
 
         _imagefile = self._imagefile[index*self.batch_size : (index+1)*self.batch_size]
-        print('len _imagefile',len(_imagefile))
+
+        if len(_imagefile) != 400:
+            _imagefile =self._imagefile[:self.batch_size - len(_imagefile)] +_imagefile
+        print('len _imagefile', len(_imagefile))
+
         # x = np.zeros((batchsize, imagesize[0], imagesize[1], 1), dtype=np.float)
         x = np.zeros((self.batch_size, self.imagesize[1], self.imagesize[0], 1), dtype=np.float)
         labels = np.ones([self.batch_size, maxlabellength]) * 10000
@@ -174,8 +178,7 @@ class DataGenerator(keras.utils.Sequence):
             # label_idx_list = [encode_dct.get(c, 0) for c in label]
             # label_idx_list = [encode_dct[c] for c in label]
             label_length[idx] = len(label_idx_list)
-            if len(label_idx_list) == 0:
-                print('erro erro ', '00000000')
+
             # 不太明白这里为什么要减去2
             # 跟两个MaxPooling有关系?
             input_length[idx] = self.imagesize[1] // 4 - 2
@@ -188,7 +191,7 @@ class DataGenerator(keras.utils.Sequence):
                   }
         if 0 in label_length:
             print('有0啊',label_length)
-        print('label_length',len(label_length))
+
 
 
         outputs = {'ctc': np.zeros([self.batch_size])}
