@@ -183,9 +183,13 @@ class DataGenerator(keras.utils.Sequence):
                   'input_length': input_length,
                   'label_length': label_length,
                   }
+
         print('label_length',len(label_length))
+        if 0 in label_length:
+            print('erro erro ','00000000')
+
         outputs = {'ctc': np.zeros([self.batch_size])}
-        # print (new_input_length, new_label_length, new_labels.shape, new_labels)
+
         return (inputs, outputs)
 
 
