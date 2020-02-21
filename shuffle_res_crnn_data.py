@@ -105,6 +105,34 @@ def is_valid(text):
         # print(text,num)
         return False
 
+def readfile(dir_list):
+    dic = {}
+
+    illeagal_list = []
+    for dir in dir_list:
+
+        filename = os.path.join(dir,'tmp_labels.txt')
+
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+            for i in lines:
+                i = i.strip()
+                try:
+                    first_whitespace_idx = i.index(' ')
+                except:
+                    continue
+                img_name_1 = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
+                img_name = os.path.join(dir,img_name_1)
+                # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
+                if len(i[first_whitespace_idx + 1:]) == 0 or (not DataGenerator.is_valid(i[first_whitespace_idx + 1:])) or len(
+                        img_name_1) == 0:
+                    print('continue 掉的',i[first_whitespace_idx + 1:])
+                    illeagal_list.append(i[first_whitespace_idx + 1:])
+                    continue
+                # p = i.split(' ')
+                dic[img_name] = i[first_whitespace_idx + 1:]
+    print(len(illeagal_list))
+    return dic
 
 
 
@@ -166,7 +194,7 @@ class DataGenerator(keras.utils.Sequence):
         if self.shuffle == True:
             np.random.shuffle(self._imagefile)
 
-    def readfile(seld,dir_list):
+    def readfile(self,dir_list):
         dic = {}
 
         illeagal_list = []
@@ -185,6 +213,9 @@ class DataGenerator(keras.utils.Sequence):
                     img_name_1 = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
                     img_name = os.path.join(dir,img_name_1)
                     # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
+                    if len(i[first_whitespace_idx + 1:]) ==0:
+                        print(i)
+
                     if len(i[first_whitespace_idx + 1:]) == 0 or (not DataGenerator.is_valid(i[first_whitespace_idx + 1:])) or len(
                             img_name_1) == 0:
                         print('continue 掉的',i[first_whitespace_idx + 1:])
