@@ -150,6 +150,7 @@ class DataGenerator(keras.utils.Sequence):
     def __getitem__(self, index):
 
         _imagefile = self._imagefile[index*self.batch_size : (index+1)*self.batch_size]
+        print('len _imagefile',len(_imagefile))
         # x = np.zeros((batchsize, imagesize[0], imagesize[1], 1), dtype=np.float)
         x = np.zeros((self.batch_size, self.imagesize[1], self.imagesize[0], 1), dtype=np.float)
         labels = np.ones([self.batch_size, maxlabellength]) * 10000
