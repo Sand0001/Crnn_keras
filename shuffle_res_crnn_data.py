@@ -185,7 +185,8 @@ class DataGenerator(keras.utils.Sequence):
                   'input_length': input_length,
                   'label_length': label_length,
                   }
-
+        if 0 in label_length:
+            print('有0啊',label_length)
         print('label_length',len(label_length))
 
 
