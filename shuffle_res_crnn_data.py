@@ -145,6 +145,7 @@ class DataGenerator(keras.utils.Sequence):
             # label_idx_list = [encode_dct.get(c, 0) for c in label]
             # label_idx_list = [encode_dct[c] for c in label]
             label_length[idx] = len(label_idx_list)
+            print('len(label_idx_list)',len(label_idx_list))
             # 不太明白这里为什么要减去2
             # 跟两个MaxPooling有关系?
             input_length[idx] = self.imagesize[1] // 4 - 2
