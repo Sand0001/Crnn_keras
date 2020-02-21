@@ -46,10 +46,16 @@ tag = sys.argv[1]
 encode_dct = {}
 
 
-train_list = ['/data2/fengjing/OCR_textrender/output/chn_script_0212',
-              '/data2/fengjing/OCR_textrender/output/chn_script_0131']
-test_list = ['/data2/fengjing/OCR_textrender/test/chn_script_0212',
-             '/data2/fengjing/OCR_textrender/test/chn_script_0131']
+train_list = [
+            # '/data2/fengjing/OCR_textrender/output/chn_script_0212',
+            #   '/data2/fengjing/OCR_textrender/output/chn_script_0131',
+              '/data2/fengjing/OCR_textrender/test/jap_checkbox_0218',
+              ]
+test_list = [
+#               '/data2/fengjing/OCR_textrender/test/chn_script_0212',
+#              '/data2/fengjing/OCR_textrender/test/chn_script_0131',
+             '/data2/fengjing/OCR_textrender/test/jap_checkbox_0218',]
+
 
 def get_session(gpu_fraction=0.95):
     num_threads = os.environ.get('OMP_NUM_THREADS')
@@ -63,7 +69,7 @@ def get_session(gpu_fraction=0.95):
             config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True, log_device_placement=False))
 
 
-illeagal_list = []
+# illeagal_list = []
 
 
 def is_valid(text):
@@ -103,13 +109,12 @@ def is_valid(text):
 
 
 class DataGenerator(keras.utils.Sequence):
-    def __init__(self, dir_list,image_path, batch_size=batch_size, shuffle=True):
+    def __init__(self, dir_list, batch_size=batch_size, shuffle=True):
         self.batch_size = batch_size
 
         self.shuffle = shuffle
         self.image_label = self.readfile(dir_list)
         self.imagesize = (32, 280)
-        self.image_path = image_path
         self._imagefile = [i for i, j in self.image_label.items()]
     def __len__(self):
         return math.ceil(len(self.image_label) / float(self.batch_size))
@@ -163,30 +168,29 @@ class DataGenerator(keras.utils.Sequence):
     def readfile(seld,dir_list):
         dic = {}
 
+        illeagal_list = []
         for dir in dir_list:
-            res = []
 
             filename = os.path.join(dir,'tmp_labels.txt')
 
             with open(filename, 'r') as f:
                 lines = f.readlines()
-                # lines = lines[:len(lines)//2]
                 for i in lines:
-                    res.append(i.strip())
-            for i in res:
-                try:
-                    first_whitespace_idx = i.index(' ')
-                except:
-                    continue
-                img_name_1 = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
-                img_name = os.path.join(dir,img_name_1)
-                # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
-                if len(i[first_whitespace_idx + 1:]) == 0 or (not DataGenerator.is_valid(i[first_whitespace_idx + 1:])) or len(
-                        img_name_1) == 0:
-                    # print('continue 掉的',i[first_whitespace_idx + 1:])
-                    continue
-                # p = i.split(' ')
-                dic[img_name] = i[first_whitespace_idx + 1:]
+                    i = i.strip()
+                    try:
+                        first_whitespace_idx = i.index(' ')
+                    except:
+                        continue
+                    img_name_1 = i[0:  first_whitespace_idx].strip(':').zfill(8) + '.jpg'
+                    img_name = os.path.join(dir,img_name_1)
+                    # if len(i[first_whitespace_idx + 1:]) == 0 or is_valid(i[first_whitespace_idx + 1:]) > maxlabellength or len(img_name) == 0 :
+                    if len(i[first_whitespace_idx + 1:]) == 0 or (not DataGenerator.is_valid(i[first_whitespace_idx + 1:])) or len(
+                            img_name_1) == 0:
+                        print('continue 掉的',i[first_whitespace_idx + 1:])
+                        illeagal_list.append(i[first_whitespace_idx + 1:])
+                        continue
+                    # p = i.split(' ')
+                    dic[img_name] = i[first_whitespace_idx + 1:]
         print(len(illeagal_list))
         return dic
     @staticmethod
@@ -213,7 +217,7 @@ class DataGenerator(keras.utils.Sequence):
                     else:
                         num += 1
                 else:
-                    illeagal_list.append(text[index])
+                    # illeagal_list.append(text[index])
                     # print('不合法的？:',text[index])
                     return False
         # print(num)
@@ -222,12 +226,6 @@ class DataGenerator(keras.utils.Sequence):
         else:
             # print(text,num)
             return False
-
-
-
-
-
-
 
 cur_line = None
 
@@ -353,8 +351,8 @@ if __name__ == '__main__':
             print("Loading model weights...")
             model.load_weights(modelPath)
             print('done!')
-    train_loader = DataGenerator(train_list, '../output/' + tag + '/',batch_size=batch_size)
-    test_loader = DataGenerator(test_list, '../test/' + tag + '/',batch_size=batch_size)
+    train_loader = DataGenerator(train_list,batch_size=batch_size)
+    test_loader = DataGenerator(test_list, batch_size=batch_size)
 
     checkpoint = ModelCheckpoint(
         filepath='./models/' + tag + '/weights_' + tag + '_shufflenet-{epoch:02d}-{val_loss:.2f}.h5',
@@ -370,8 +368,10 @@ if __name__ == '__main__':
     earlystop = EarlyStopping(monitor='val_loss', patience=2, verbose=1)
     tensorboard = TensorBoard(log_dir='./models/logs', write_graph=True)
     print('-----------Start training-----------')
+    steps_per_epoch = len(train_loader)
+    validation_steps = len(test_loader)
     model.fit_generator(train_loader,
-                        steps_per_epoch=train_size // batch_size,
+                        steps_per_epoch= steps_per_epoch,
                         epochs=30,
                         initial_epoch=0,
                         validation_data=test_loader,
